@@ -1,0 +1,42 @@
+import { Redis } from "@upstash/redis";
+import type { CalendezConfig } from "@/lib/types";
+import defaults from "../../calendez.config.defaults";
+
+function getRedis(): Redis | null {
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+    return null;
+  }
+  return new Redis({
+    url: process.env.KV_REST_API_URL,
+    token: process.env.KV_REST_API_TOKEN,
+  });
+}
+
+const CONFIG_KEY = "calendez:config";
+
+export async function getConfig(): Promise<CalendezConfig> {
+  const redis = getRedis();
+  if (!redis) {
+    // No Redis configured — use defaults (works for local dev without KV)
+    return defaults;
+  }
+
+  const stored = await redis.get<CalendezConfig>(CONFIG_KEY);
+  if (stored) {
+    return stored;
+  }
+
+  // First run — seed from defaults
+  await redis.set(CONFIG_KEY, defaults);
+  return defaults;
+}
+
+export async function setConfig(config: CalendezConfig): Promise<void> {
+  const redis = getRedis();
+  if (!redis) {
+    throw new Error(
+      "Redis is not configured. Set KV_REST_API_URL and KV_REST_API_TOKEN."
+    );
+  }
+  await redis.set(CONFIG_KEY, config);
+}

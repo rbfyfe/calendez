@@ -1,0 +1,16 @@
+import { auth, isOwner } from "@/lib/auth";
+import { redirect } from "next/navigation";
+
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await auth();
+
+  if (!session?.user?.email || !isOwner(session.user.email)) {
+    redirect("/api/auth/signin?callbackUrl=/admin");
+  }
+
+  return <>{children}</>;
+}
