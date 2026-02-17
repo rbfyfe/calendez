@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { getConfig } from "@/lib/config";
 import { getFreeBusy } from "@/lib/google-calendar";
 import { computeAvailableSlots } from "@/lib/availability";
 import { toZonedDate } from "@/lib/timezone";
+import { getOwnerAccessToken } from "@/lib/owner-tokens";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -36,11 +36,11 @@ export async function GET(request: Request) {
     );
   }
 
-  // Get the owner's session to access Google Calendar
-  const session = await auth();
-  if (!session?.accessToken) {
+  // Get the owner's Google Calendar token (works for public visitors too)
+  const accessToken = await getOwnerAccessToken();
+  if (!accessToken) {
     return NextResponse.json(
-      { error: "Calendar not connected. The owner needs to connect their Google Calendar." },
+      { error: "Calendar not connected. The owner needs to connect their Google Calendar at /admin." },
       { status: 503 }
     );
   }
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 
   try {
     const busyPeriods = await getFreeBusy(
-      session.accessToken,
+      accessToken,
       config.owner.calendarId,
       dayStart.toISOString(),
       dayEnd.toISOString()

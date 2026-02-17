@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { getConfig } from "@/lib/config";
 import { getFreeBusy, createEvent } from "@/lib/google-calendar";
 import { bookingRequestSchema } from "@/lib/validators";
 import { toZonedDate } from "@/lib/timezone";
 import { addMinutes } from "date-fns";
+import { getOwnerAccessToken } from "@/lib/owner-tokens";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -29,10 +29,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const session = await auth();
-  if (!session?.accessToken) {
+  // Get the owner's Google Calendar token (works for public visitors too)
+  const accessToken = await getOwnerAccessToken();
+  if (!accessToken) {
     return NextResponse.json(
-      { error: "Calendar not connected" },
+      { error: "Calendar not connected. The owner needs to connect their Google Calendar at /admin." },
       { status: 503 }
     );
   }
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
   // Race condition protection: re-check availability before creating event
   try {
     const busyPeriods = await getFreeBusy(
-      session.accessToken,
+      accessToken,
       config.owner.calendarId,
       startDate.toISOString(),
       endDate.toISOString()
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
       .join("\n");
 
     const event = await createEvent({
-      accessToken: session.accessToken,
+      accessToken: accessToken,
       calendarId: config.owner.calendarId,
       summary: `${eventType.title} with ${name}`,
       description,

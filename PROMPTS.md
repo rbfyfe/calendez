@@ -1,0 +1,88 @@
+# Prompts Used to Build Calendez
+
+A chronological record of every prompt used during development, so others can see how this project was built with Claude Code.
+
+---
+
+## Session 1: Initial Build
+
+### Prompt 1 — The Initial Vision
+> Go to calendly and look around. I basically want people to be able to book times with me on my google calendar, and i don't want to make a big hosting set up. I just want to use vercel or something simple to make this whole thing work.
+
+*Context: Starting from scratch. Claude browsed Calendly's website to understand the UX patterns (3-panel layout, event types, etc.), then designed and built the entire app.*
+
+### Prompt 2 — Clarifying Questions (answered via UI)
+- **Event types?** → "Multiple event types" (15min, 30min, 60min)
+- **Google credentials?** → "Need guidance"
+- **Domain?** → "Default Vercel URL"
+
+### Prompt 3 — Admin & Settings
+> just checking. if someone were to go to /admin, or read this repo, would that be a problem?
+
+*Context: User wanted to confirm the repo is safe to be public. Discussed OWNER_EMAIL auth approach and that no secrets are in code.*
+
+### Prompt 4 — Settings Management (answered via UI)
+- **Settings approach?** → "Admin UI + Vercel KV (Recommended)"
+- **Post-booking management?** → "Nothing for now"
+
+### Prompt 5 — Documentation for Others
+> Awesome, can you document this in a way to allow other people who have claudecode to spin up their own version of this themselves? Can you add information into the github repo to make it very easy for the claude agent that reads this to deploy it?
+
+*Context: This led to creating README.md, CLAUDE.md, and .env.example — making the repo self-documenting for both humans and AI agents.*
+
+### Prompt 6 — Commit & Push
+> I think you're ready to commit
+
+*Context: 57 files changed, 9,480 insertions. Initial commit of the entire app.*
+
+### Prompt 7 — Create GitHub Repo
+> whats the name of the repo? I dont see it in my github
+
+> sure yes please
+
+*Context: Repo didn't exist yet. Created https://github.com/rbfyfe/calendez (public).*
+
+### Prompt 8 — Google Cloud Console Setup
+> Is there an easy way to do this google cloud console thing? Like can you call an API or something for me?
+
+> ok
+
+*Context: No API exists for Google Cloud Console setup. Claude walked through the steps manually in the user's browser using Chrome automation.*
+
+---
+
+## Session 2: Google Cloud Console (Browser)
+
+### Prompt 9 — Resume Setup
+> oh man, can pick this up from where we left off, can you do this for me by going into my browser and pulling the api keys you need?
+
+*Context: Previous session's browser connection had dropped mid-setup. Claude reconnected and continued the Google Cloud Console configuration — created project "Calendez", enabled Calendar API, configured OAuth consent screen, created OAuth credentials, added test user.*
+
+---
+
+## Session 3: Finish .env.local & Test
+
+### Prompt 10 — Continue from Context Compaction
+*(Automatic continuation after context window compaction)*
+
+*Context: Claude completed the OAuth consent screen setup (audience → contact info → finish), created OAuth client with correct redirect URIs, added rbfyfe@gmail.com as test user, then asked user to paste the client secret.*
+
+### Prompt 11 — Client Secret (answered via UI)
+> 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
+
+*Context: User pasted the Google OAuth client secret so Claude could write it to .env.local.*
+
+---
+
+## Session 4: QA & Bug Fixes
+
+### Prompt 12 — QA Findings + Prompts File Request
+> i'm going a little qa and it seems like it's not working when i try to book an appointment as not an admin. I also don't get why it says "your name" at the top of the screen. Seems odd.
+>
+> Before we continue, I would like to make a file that has all the prompts I used. Can you arrange that?
+
+*Context: Two bugs found during QA testing: (1) Public booking completely broken because API routes use `auth()` which only works for the admin's session, (2) "Your Name" placeholder showing because the default config hasn't been updated. Also requested this PROMPTS.md file.*
+
+### Prompt 13 — Prompts File Preferences (answered via UI)
+- **What to include?** → "Reconstruct from history"
+- **File location?** → "PROMPTS.md in repo root. Also every prompt i make going forward should update that file"

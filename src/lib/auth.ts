@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import { saveOwnerTokens } from "@/lib/owner-tokens";
+import { autoPopulateOwnerName } from "@/lib/config";
 
 declare module "next-auth" {
   interface Session {
@@ -38,12 +40,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, profile }) {
       // On initial sign-in, capture the tokens
       if (account) {
         token.accessToken = account.access_token!;
         token.refreshToken = account.refresh_token!;
         token.expiresAt = account.expires_at!;
+
+        // Persist tokens to Redis so public routes can access them
+        await saveOwnerTokens({
+          accessToken: token.accessToken,
+          refreshToken: token.refreshToken,
+          expiresAt: token.expiresAt,
+        });
+
+        // Auto-populate owner name from Google profile on first sign-in
+        if (profile?.name) {
+          await autoPopulateOwnerName(profile.name);
+        }
+
         return token;
       }
 
@@ -77,6 +92,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (data.refresh_token) {
           token.refreshToken = data.refresh_token;
         }
+
+        // Sync refreshed tokens to Redis
+        await saveOwnerTokens({
+          accessToken: token.accessToken!,
+          refreshToken: token.refreshToken!,
+          expiresAt: token.expiresAt!,
+        });
 
         return token;
       } catch {

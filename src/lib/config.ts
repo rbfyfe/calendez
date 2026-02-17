@@ -40,3 +40,21 @@ export async function setConfig(config: CalendezConfig): Promise<void> {
   }
   await redis.set(CONFIG_KEY, config);
 }
+
+/**
+ * Auto-populate the owner name from Google profile on first sign-in.
+ * Only updates if the current name is still the default placeholder.
+ */
+export async function autoPopulateOwnerName(name: string): Promise<void> {
+  try {
+    const config = await getConfig();
+    if (config.owner.name === "Your Name") {
+      const redis = getRedis();
+      if (redis) {
+        await setConfig({ ...config, owner: { ...config.owner, name } });
+      }
+    }
+  } catch (error) {
+    console.error("Failed to auto-populate owner name:", error);
+  }
+}
