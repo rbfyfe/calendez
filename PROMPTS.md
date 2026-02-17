@@ -86,3 +86,17 @@ A chronological record of every prompt used during development, so others can se
 ### Prompt 13 — Prompts File Preferences (answered via UI)
 - **What to include?** → "Reconstruct from history"
 - **File location?** → "PROMPTS.md in repo root. Also every prompt i make going forward should update that file"
+
+---
+
+## Session 5: Testing & Commit
+
+### Prompt 14 — Commit Request
+> yes
+
+*Context: After end-to-end testing confirmed the public booking fix works (admin re-signed in → tokens persisted → curl test showed 19 time slots → booking page loaded slots for public visitors), user approved committing all changes.*
+
+### Prompt 15 — Push to Remote
+> yes
+
+*Context: User confirmed pushing commit `09b4a67` to origin/main on GitHub.*
