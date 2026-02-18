@@ -100,3 +100,28 @@ A chronological record of every prompt used during development, so others can se
 > yes
 
 *Context: User confirmed pushing commit `09b4a67` to origin/main on GitHub.*
+
+---
+
+## Session 6: Agent-Friendly README & CLAUDE.md Rewrite
+
+### Prompt 16 — Make the Repo Shareable via LinkedIn
+> Alright, so I want to introduce this app to the world, but I want to do it in a way that allows anyone with Claude, to install this really easily. Here's what I am thinking, and let's talk through it to make something great.
+>
+> I'll make a LinkedIn post that says "I just vibe coded a replacement to Calendly and you can too in just one prompt w/ Claude!"
+>
+> I would then share "Download Claude for desktop, and tell Claude to read this URL and help me set it up!"
+>
+> I then would expect claude code to go to the github repo, and i'm not sure what claude would do first, but i would expect it to read the readme. If so, have the readme guide the agent reading this (if they are one) to tell the user what this is, and that you can set up everything for them including creating an account. I want you to tell the agent it is preferred to take over the users browser to set it up. that it should explain the tools to the user and if possible, find a way to ensure the user feels safe in this whole process.
+
+*Context: User wants to share the project on LinkedIn. Rewrote README.md as a marketing-first document with Claude Code as the primary setup path, and transformed CLAUDE.md into a complete agent execution playbook with phased browser automation workflows for Google Cloud Console and Vercel deployment. Added a screenshot of the booking page.*
+
+### Prompt 17 — Hosting Clarification
+> do you need to help set-up vercel or a hosting as well?
+
+*Context: User wanted to confirm the docs cover Vercel deployment. They do — Phase 5 of CLAUDE.md covers the full Vercel deployment flow including browser automation.*
+
+### Prompt 18 — Screenshot Preference
+> Add a screenshot
+
+*Context: User chose to include a screenshot of the booking UI in the README rather than going text-only.*

@@ -1,25 +1,72 @@
 # Calendez
 
-A self-hosted Calendly alternative. Let people book meetings on your Google Calendar with a clean, simple interface. Deployed on Vercel with zero infrastructure to manage.
+### Your own Calendly — free, self-hosted, set up in one prompt.
+
+Calendez is a self-hosted booking page that connects to your Google Calendar. Visitors pick a time, it checks your availability, creates the event, and sends them an invitation — just like Calendly, but it's yours. No database needed (Google Calendar *is* the database), and it runs free on Vercel.
 
 ## Features
 
-- Multiple event types (15 min, 30 min, 60 min, etc.)
-- Google Calendar integration (reads your availability, creates events)
-- Automatic email invitations (via Google Calendar)
+- Multiple event types (15 min, 30 min, 60 min — or whatever you want)
+- Google Calendar integration — reads your availability, creates events
+- Automatic email invitations via Google Calendar
 - Admin dashboard to manage event types, working hours, and branding
-- Timezone-aware scheduling
-- No database needed (Google Calendar is the database, config in Upstash Redis)
+- Timezone-aware scheduling for visitors worldwide
+- No database — Google Calendar stores bookings, config lives in Upstash Redis
+- Free to host on Vercel
 
-## Prerequisites
+![Calendez booking page](public/screenshot.png)
+
+## Set Up With Claude Code
+
+The fastest way to get Calendez running is with [Claude Code](https://claude.ai/download) — an AI coding assistant that runs on your computer. It can install the project, configure Google Cloud in your browser, and deploy it to Vercel, all from a single prompt.
+
+**What you need:** A Google account (for Calendar access) and [Claude Code](https://claude.ai/download) installed.
+
+**The prompt — copy, paste, done:**
+
+```
+Read the README at https://github.com/rbfyfe/calendez and help me set it up from scratch.
+```
+
+**What happens next:**
+
+1. Claude clones the project and installs dependencies
+2. Claude opens Google Cloud Console **in your browser** and configures the Calendar API for you
+3. Claude creates your environment configuration
+4. Claude starts the app locally so you can test it
+5. Claude deploys it to Vercel when you're ready
+
+Claude explains each step before taking action and asks your permission before doing anything in your browser. You can see everything it does and stop it at any time — like screen-sharing with a helpful friend.
+
+## How It Works
+
+1. You configure your event types and working hours in the admin dashboard
+2. Visitors pick an event type, date, and time slot
+3. The server checks your Google Calendar for conflicts via the FreeBusy API
+4. When a visitor books, a Google Calendar event is created with them as an attendee
+5. Google automatically sends them a calendar invitation email
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router), TypeScript
+- **UI**: Tailwind CSS v4 + shadcn/ui
+- **Auth**: Auth.js v5 with Google OAuth
+- **Calendar**: Google Calendar API via `@googleapis/calendar`
+- **Config**: Upstash Redis (via Vercel KV)
+- **Hosting**: Vercel (free tier)
+
+<details>
+<summary><strong>Manual Setup (without Claude Code)</strong></summary>
+
+### Prerequisites
 
 - Node.js 18+
 - A Google account
 - A Vercel account (free tier works)
 
-## Quick Start
+### 1. Fork and install
 
-### 1. Clone and install
+Fork this repo, then:
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/calendez.git
@@ -44,8 +91,6 @@ npm install
 
 ### 3. Configure environment variables
 
-Copy the example file and fill in your values:
-
 ```bash
 cp .env.example .env.local
 ```
@@ -59,7 +104,7 @@ cp .env.example .env.local
 | `KV_REST_API_URL` | Upstash Redis URL | Vercel Storage or Upstash dashboard |
 | `KV_REST_API_TOKEN` | Upstash Redis token | Vercel Storage or Upstash dashboard |
 
-Note: KV variables are optional for local development. Without them, the app uses default config from `calendez.config.defaults.ts`.
+KV variables are optional for local development. Without them, the app uses default config from `calendez.config.defaults.ts`.
 
 ### 4. Run locally
 
@@ -72,45 +117,24 @@ npm run dev
 
 ### 5. Deploy to Vercel
 
-1. Push your repo to GitHub
+1. Push your fork to GitHub
 2. Import the project in [Vercel](https://vercel.com/new)
 3. In Vercel dashboard, go to Storage > Create > KV (Upstash Redis)
 4. Add all environment variables in Settings > Environment Variables
 5. Add the production redirect URI to Google Cloud Console:
    `https://your-app.vercel.app/api/auth/callback/google`
-6. Deploy!
+6. Deploy and visit `/admin` on your production URL to connect Google Calendar
 
-## Customization
-
-Visit `/admin` after signing in with your owner email to:
-
-- Add, edit, or remove event types
-- Set working hours for each day of the week
-- Configure buffer time between meetings
-- Set how far in advance people can book
-- Change your accent color and logo
+</details>
 
 ## Development
 
 ```bash
-npm run dev    # Start dev server
+npm run dev    # Start dev server (port 3000)
 npm run build  # Production build
 npm run lint   # Run ESLint
 ```
 
-## How It Works
+## For AI Agents
 
-1. You configure your event types and working hours in the admin dashboard
-2. Visitors pick an event type, date, and time slot
-3. The server checks your Google Calendar for conflicts via the FreeBusy API
-4. When a visitor books, a Google Calendar event is created with them as an attendee
-5. Google automatically sends them a calendar invitation email
-
-## Tech Stack
-
-- **Framework**: Next.js 15 (App Router)
-- **UI**: Tailwind CSS + shadcn/ui
-- **Auth**: Auth.js v5 with Google OAuth
-- **Calendar**: Google Calendar API via `@googleapis/calendar`
-- **Config storage**: Upstash Redis (via Vercel KV)
-- **Deployment**: Vercel
+If you are an AI coding assistant helping someone set up this project, read `CLAUDE.md` in the project root for a complete step-by-step setup guide — including browser automation workflows for Google Cloud Console and Vercel deployment.
