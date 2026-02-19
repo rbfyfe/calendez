@@ -125,3 +125,27 @@ A chronological record of every prompt used during development, so others can se
 > Add a screenshot
 
 *Context: User chose to include a screenshot of the booking UI in the README rather than going text-only.*
+
+---
+
+## Session 7: Deploy to Vercel
+
+### Prompt 19 — Deploy Request
+> *(Continued from previous session that ran out of context)*
+
+*Context: Resumed mid-deployment. The plan was already approved — deploy Calendez to Vercel with full browser automation. Picked up from the Google OAuth consent summary page where "calendez.vercel.app wants access to your Google Account" was showing.*
+
+**What happened in this session (and the tail end of the previous one):**
+
+1. **First deploy failed** — `lightningcss-darwin-arm64` was a direct dependency in `package.json` (macOS ARM64 only), causing `EBADPLATFORM` on Vercel's linux-x64 build. Fixed by removing it from dependencies and regenerating `package-lock.json`. Committed as `6861c52`.
+2. **Second deploy succeeded** — App live at **calendez.vercel.app**.
+3. **Created Vercel KV store** — Upstash Redis (`upstash-kv-aquamarine-mirror`), free plan, iad1 region. Connected to the project (auto-sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`).
+4. **Redeployed** with KV env vars.
+5. **Added production redirect URI** — `https://calendez.vercel.app/api/auth/callback/google` added to Google Cloud Console OAuth client.
+6. **Connected Google Calendar on production** — Clicked through Google OAuth consent flow. Admin page shows "Connected as rbfyfe@gmail.com".
+7. **Verified public booking page** — Event types load, date selection works, time slots appear from Google Calendar FreeBusy API.
+
+### Prompt 20 — Upstash Terms Acceptance
+> I clicked it
+
+*Context: User confirmed they clicked "Accept and Create" on the Upstash terms & conditions page during Vercel KV store setup.*
