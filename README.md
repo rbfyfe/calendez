@@ -2,6 +2,8 @@
 
 ### Your own Calendly — free, self-hosted, set up in one prompt.
 
+**Live demo:** [calendez.vercel.app](https://calendez.vercel.app)
+
 Calendez is a self-hosted booking page that connects to your Google Calendar. Visitors pick a time, it checks your availability, creates the event, and sends them an invitation — just like Calendly, but it's yours. No database needed (Google Calendar *is* the database), and it runs free on Vercel.
 
 ## Features

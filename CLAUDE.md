@@ -182,9 +182,13 @@ If they cloned `rbfyfe/calendez`, they need their own GitHub repo:
 #### Step 5c — Create Vercel KV store
 After deployment:
 - Go to the project in Vercel dashboard
-- Storage → Create → KV (Upstash Redis)
-- Connect it to the project (this auto-sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`)
-- Redeploy for the env vars to take effect
+- Storage → look for "Upstash" section → Create "Upstash for Redis"
+  - (Note: Vercel moved KV to the Marketplace — it's now under Upstash, not a separate "KV" option)
+  - The user may need to accept Upstash terms on first use
+  - Select Free plan and a region close to the user
+- Connect the database to the project (select the project from the dropdown, check all environments)
+- This auto-sets `KV_REST_API_URL` and `KV_REST_API_TOKEN` as environment variables
+- Redeploy for the env vars to take effect (Deployments → ... menu → Redeploy)
 
 #### Step 5d — Add production redirect URI
 Go back to Google Cloud Console:
@@ -229,6 +233,7 @@ The admin dashboard has a "Save Changes" button that persists config to Upstash 
 | "Slot no longer available" on booking | Race condition | Expected — slot was booked by someone else, pick another |
 | Token errors after a while | Google OAuth token expired | Sign out at /admin and sign back in |
 | `lightningcss` binary error on install | Platform-specific native binary missing | `npm install lightningcss-$(node -e "console.log(process.platform+'-'+process.arch)")@1.30.2` |
+| `EBADPLATFORM` error on Vercel deploy | Platform-specific package (e.g. `lightningcss-darwin-arm64`) in `package.json` dependencies | Remove the platform-specific package from `package.json`, then `rm -rf node_modules package-lock.json && npm install` to regenerate the lock file |
 
 ---
 
