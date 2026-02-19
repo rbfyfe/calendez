@@ -236,7 +236,7 @@ The admin dashboard has a "Save Changes" button that persists config to Upstash 
 
 ### How It Works
 - **Framework**: Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui
-- **Auth**: Auth.js v5 with Google OAuth (scopes: `calendar.freebusy` + `calendar.events`)
+- **Auth**: next-auth v5 (Auth.js) with Google OAuth (scopes: `calendar.freebusy` + `calendar.events`)
 - **Storage**: No database — Google Calendar stores bookings, Upstash Redis stores config
 - **Token flow**: Admin signs in → tokens encrypted with AES-256-GCM → stored in Redis → public routes retrieve tokens via `getOwnerAccessToken()` → tokens auto-refresh when expired
 - **Config fallback**: Without Redis, app uses `calendez.config.defaults.ts` (3 event types, M-F 9-5)
@@ -245,7 +245,7 @@ The admin dashboard has a "Save Changes" button that persists config to Upstash 
 
 | File | Purpose |
 |------|---------|
-| `src/lib/auth.ts` | Auth.js v5 config, Google provider, JWT token refresh, token persistence |
+| `src/lib/auth.ts` | next-auth v5 config, Google provider, JWT token refresh, token persistence |
 | `src/lib/owner-tokens.ts` | Encrypted token storage (Redis or in-memory), token refresh, `getOwnerAccessToken()` |
 | `src/lib/availability.ts` | Core slot computation algorithm |
 | `src/lib/google-calendar.ts` | Google Calendar API wrapper (FreeBusy + event creation) |
@@ -253,13 +253,37 @@ The admin dashboard has a "Save Changes" button that persists config to Upstash 
 | `src/lib/timezone.ts` | Timezone conversion utilities using @date-fns/tz |
 | `src/lib/validators.ts` | Zod schemas for config and booking validation |
 | `src/lib/types.ts` | TypeScript interfaces for config, events, slots |
+| `src/lib/utils.ts` | Utility functions (`cn()` for clsx + tailwind-merge) |
 | `src/app/page.tsx` | Landing page — shows event type cards |
 | `src/app/book/[slug]/page.tsx` | Booking page for a specific event type |
+| `src/app/book/[slug]/confirmed/page.tsx` | Booking confirmation page |
 | `src/app/admin/page.tsx` | Admin dashboard |
+| `src/app/api/auth/[...nextauth]/route.ts` | next-auth route handlers |
 | `src/app/api/availability/route.ts` | GET: returns available time slots |
 | `src/app/api/book/route.ts` | POST: creates Google Calendar event |
+| `src/app/api/config/route.ts` | GET: public config (event types, branding) |
 | `src/app/api/admin/config/route.ts` | GET/PUT: admin config CRUD |
 | `calendez.config.defaults.ts` | Default config (seeds Redis on first run) |
+
+### Components
+
+```
+src/components/
+├── admin/
+│   ├── admin-dashboard.tsx      # Main admin panel with tabs
+│   ├── availability-editor.tsx  # Working hours editor
+│   ├── branding-editor.tsx      # Color, name, logo settings
+│   ├── event-type-editor.tsx    # Add/edit/remove event types
+│   └── sign-out-button.tsx      # Admin sign-out
+├── booking/
+│   ├── booking-page.tsx         # Booking flow container
+│   ├── booking-form.tsx         # Name/email form + submit
+│   ├── event-info-panel.tsx     # Event details sidebar
+│   ├── time-slot-picker.tsx     # Date + time slot selection
+│   └── timezone-selector.tsx    # Timezone dropdown
+├── ui/                          # shadcn/ui primitives (button, card, dialog, etc.)
+└── event-type-card.tsx          # Event type card on landing page
+```
 
 ### Routes
 
@@ -277,13 +301,14 @@ The admin dashboard has a "Save Changes" button that persists config to Upstash 
 ```bash
 npm run dev   # Local development (port 3000)
 npm run build # Production build
+npm run start # Production server (after build)
 npm run lint  # ESLint
 ```
 
 ### Technical Notes
 
 - `@vercel/kv` is deprecated — use `@upstash/redis` instead
-- Auth.js v5: augment `@auth/core/jwt` (not `next-auth/jwt`) for JWT interface extension
+- next-auth v5: augment `@auth/core/jwt` (not `next-auth/jwt`) for JWT interface extension
 - Next.js 16 uses `params: Promise<{...}>` pattern (async params in page components)
 - Google OAuth needs `access_type=offline` + `prompt=consent` to get a refresh token
 - Service accounts can't access personal Gmail calendars — must use OAuth2
