@@ -149,3 +149,38 @@ A chronological record of every prompt used during development, so others can se
 > I clicked it
 
 *Context: User confirmed they clicked "Accept and Create" on the Upstash terms & conditions page during Vercel KV store setup.*
+
+### Prompt 21 — Commit & Push
+> yes, update the readme and the claude files also
+
+*Context: User approved committing and also requested updates to README.md and CLAUDE.md — added live demo link (`calendez.vercel.app`) to README, updated CLAUDE.md's KV setup step for the Marketplace flow, added EBADPLATFORM troubleshooting entry. Committed as `a3debc8`.*
+
+---
+
+## Session 8: Make Redis Optional
+
+### Prompt 22 — Why Is There a Database?
+> Help me understand why you needed to use a database to make this app work? I wanted to have this application work without a database part.
+
+*Context: User questioned why Upstash Redis was needed. Explained that Redis stores exactly 2 keys: encrypted Google OAuth tokens (so public visitors can check calendar availability without the admin being logged in) and admin config. Google Calendar remains the actual database. Explored alternatives (env var, cookies, file storage, service accounts) and their trade-offs.*
+
+### Prompt 23 — Tell Me More About Env Var Option
+> Tell me more about option 2
+
+*Context: User wanted details on the env-var approach (encrypting the refresh token as a Vercel environment variable). Explained the setup flow, runtime behavior, config-via-defaults-file, and the token rotation trade-off.*
+
+### Prompt 24 — Make Redis Optional
+> Yes, make Redis optional
+
+*Context: User chose to make Redis optional with env var fallback for tokens. Implementation:*
+
+1. **`src/lib/owner-tokens.ts`** — Added 3-tier token loading: Redis → `ENCRYPTED_OWNER_REFRESH_TOKEN` env var → in-memory. Added module-level access token cache for warm serverless instances. Exports `encryptRefreshToken()`, `isRedisConfigured()`, `getLastEncryptedRefreshToken()`.
+2. **`src/app/api/admin/setup-token/route.ts`** — New admin-only endpoint that returns the encrypted refresh token for env var setup.
+3. **`src/app/admin/page.tsx`** — Shows `TokenSetup` component when Redis is not configured and admin is signed in.
+4. **`src/components/admin/token-setup.tsx`** — New component with copyable encrypted token and deployment instructions.
+5. **`src/lib/config.ts`** — Updated error message in `setConfig()` to guide users to edit defaults file.
+6. **`src/app/api/admin/config/route.ts`** — Catches `setConfig` error and returns friendly message.
+7. **`src/components/admin/admin-dashboard.tsx`** — Shows info banner when Redis unavailable, hides Save button.
+8. **`.env.example`** — Documented `ENCRYPTED_OWNER_REFRESH_TOKEN`.
+9. **`README.md`** — Updated to reflect Redis is optional, two deployment modes.
+10. **`CLAUDE.md`** — Phase 5 now presents both Redis and no-Redis options, updated architecture section.

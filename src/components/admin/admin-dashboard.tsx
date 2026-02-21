@@ -8,7 +8,7 @@ import { BrandingEditor } from "./branding-editor";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export function AdminDashboard() {
+export function AdminDashboard({ hasRedis = true }: { hasRedis?: boolean }) {
   const [config, setConfig] = useState<CalendezConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -71,6 +71,14 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6">
+      {!hasRedis && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg p-3">
+          Config is loaded from <code className="font-mono text-xs bg-amber-100 px-1 rounded">calendez.config.defaults.ts</code>.
+          To customize event types, availability, or branding, edit that file and redeploy.
+          To enable live editing, add Upstash Redis (Vercel KV).
+        </div>
+      )}
+
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3">
           {error}
@@ -108,14 +116,16 @@ export function AdminDashboard() {
         </TabsContent>
       </Tabs>
 
-      <div className="flex items-center gap-3">
-        <Button onClick={saveConfig} disabled={saving || !dirty}>
-          {saving ? "Saving..." : "Save Changes"}
-        </Button>
-        {dirty && (
-          <span className="text-sm text-amber-600">Unsaved changes</span>
-        )}
-      </div>
+      {hasRedis && (
+        <div className="flex items-center gap-3">
+          <Button onClick={saveConfig} disabled={saving || !dirty}>
+            {saving ? "Saving..." : "Save Changes"}
+          </Button>
+          {dirty && (
+            <span className="text-sm text-amber-600">Unsaved changes</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

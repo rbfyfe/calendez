@@ -35,7 +35,7 @@ export async function setConfig(config: CalendezConfig): Promise<void> {
   const redis = getRedis();
   if (!redis) {
     throw new Error(
-      "Redis is not configured. Set KV_REST_API_URL and KV_REST_API_TOKEN."
+      "Config changes require Redis (Upstash KV). Without Redis, edit calendez.config.defaults.ts and redeploy."
     );
   }
   await redis.set(CONFIG_KEY, config);

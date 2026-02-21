@@ -179,8 +179,14 @@ If they cloned `rbfyfe/calendez`, they need their own GitHub repo:
   - `OWNER_EMAIL` — same as .env.local
 - Click Deploy
 
-#### Step 5c — Create Vercel KV store
-After deployment:
+#### Step 5c — Token storage (choose one)
+
+Ask the user:
+> "For storing your Google Calendar tokens in production, there are two options:
+> 1. **Upstash Redis (recommended)** — I'll set it up in Vercel. Gives you a live admin dashboard for editing event types and availability.
+> 2. **No database** — I'll grab an encrypted token and set it as an environment variable. Simpler, but config changes require editing a file and redeploying."
+
+**Option 1: With Redis**
 - Go to the project in Vercel dashboard
 - Storage → look for "Upstash" section → Create "Upstash for Redis"
   - (Note: Vercel moved KV to the Marketplace — it's now under Upstash, not a separate "KV" option)
@@ -189,6 +195,15 @@ After deployment:
 - Connect the database to the project (select the project from the dropdown, check all environments)
 - This auto-sets `KV_REST_API_URL` and `KV_REST_API_TOKEN` as environment variables
 - Redeploy for the env vars to take effect (Deployments → ... menu → Redeploy)
+
+**Option 2: Without Redis (env var)**
+- The user should have already signed in at `http://localhost:3000/admin` during Phase 4
+- After sign-in, the admin page shows a blue "Deploy Without Redis" section with an encrypted token
+- Copy the encrypted token value
+- In Vercel dashboard → Settings → Environment Variables, add:
+  - `ENCRYPTED_OWNER_REFRESH_TOKEN` = {the copied value}
+- Redeploy for the env var to take effect
+- Config comes from `calendez.config.defaults.ts` — to customize, edit that file and redeploy
 
 #### Step 5d — Add production redirect URI
 Go back to Google Cloud Console:
@@ -242,9 +257,10 @@ The admin dashboard has a "Save Changes" button that persists config to Upstash 
 ### How It Works
 - **Framework**: Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui
 - **Auth**: next-auth v5 (Auth.js) with Google OAuth (scopes: `calendar.freebusy` + `calendar.events`)
-- **Storage**: No database — Google Calendar stores bookings, Upstash Redis stores config
-- **Token flow**: Admin signs in → tokens encrypted with AES-256-GCM → stored in Redis → public routes retrieve tokens via `getOwnerAccessToken()` → tokens auto-refresh when expired
-- **Config fallback**: Without Redis, app uses `calendez.config.defaults.ts` (3 event types, M-F 9-5)
+- **Storage**: No database required — Google Calendar stores bookings, config lives in `calendez.config.defaults.ts` (optional Upstash Redis for live admin editing)
+- **Token flow**: Admin signs in → tokens encrypted with AES-256-GCM → stored in Redis or as encrypted env var → public routes retrieve tokens via `getOwnerAccessToken()` → tokens auto-refresh when expired
+- **Token priority**: Redis → `ENCRYPTED_OWNER_REFRESH_TOKEN` env var → in-memory (local dev only)
+- **Config**: Without Redis, app uses `calendez.config.defaults.ts` (3 event types, M-F 9-5). With Redis, admin dashboard supports live editing.
 
 ### Key Files
 

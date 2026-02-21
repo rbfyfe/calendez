@@ -13,7 +13,8 @@ Calendez is a self-hosted booking page that connects to your Google Calendar. Vi
 - Automatic email invitations via Google Calendar
 - Admin dashboard to manage event types, working hours, and branding
 - Timezone-aware scheduling for visitors worldwide
-- No database — Google Calendar stores bookings, config lives in Upstash Redis
+- No database required — Google Calendar stores bookings, config lives in a defaults file
+- Optional Upstash Redis for live admin config editing
 - Free to host on Vercel
 
 ![Calendez booking page](public/screenshot.png)
@@ -54,7 +55,7 @@ Claude explains each step before taking action and asks your permission before d
 - **UI**: Tailwind CSS v4 + shadcn/ui
 - **Auth**: Auth.js v5 with Google OAuth
 - **Calendar**: Google Calendar API via `@googleapis/calendar`
-- **Config**: Upstash Redis (via Vercel KV)
+- **Config**: Defaults file (+ optional Upstash Redis for live editing)
 - **Hosting**: Vercel (free tier)
 
 <details>
@@ -103,10 +104,11 @@ cp .env.example .env.local
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | Google Cloud Console > Credentials |
 | `AUTH_SECRET` | Random secret for session encryption | Run: `openssl rand -base64 32` |
 | `OWNER_EMAIL` | Your Google email (for admin access) | Your Gmail address |
-| `KV_REST_API_URL` | Upstash Redis URL | Vercel Storage or Upstash dashboard |
-| `KV_REST_API_TOKEN` | Upstash Redis token | Vercel Storage or Upstash dashboard |
+| `KV_REST_API_URL` | Upstash Redis URL (optional) | Vercel Storage or Upstash dashboard |
+| `KV_REST_API_TOKEN` | Upstash Redis token (optional) | Vercel Storage or Upstash dashboard |
+| `ENCRYPTED_OWNER_REFRESH_TOKEN` | Encrypted token (only without Redis) | Generated at /admin after sign-in |
 
-KV variables are optional for local development. Without them, the app uses default config from `calendez.config.defaults.ts`.
+**Redis is optional.** Without it, config comes from `calendez.config.defaults.ts`. For production token storage without Redis, sign in at `/admin` locally, copy the encrypted refresh token shown, and set it as `ENCRYPTED_OWNER_REFRESH_TOKEN` in Vercel.
 
 ### 4. Run locally
 
@@ -121,8 +123,10 @@ npm run dev
 
 1. Push your fork to GitHub
 2. Import the project in [Vercel](https://vercel.com/new)
-3. In Vercel dashboard, go to Storage > Create > KV (Upstash Redis)
-4. Add all environment variables in Settings > Environment Variables
+3. Add environment variables (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `AUTH_SECRET`, `OWNER_EMAIL`)
+4. **Choose one** for token storage:
+   - **With Redis (recommended):** Create a KV store in Vercel dashboard (Storage > Upstash for Redis), connect it to the project
+   - **Without Redis:** Add `ENCRYPTED_OWNER_REFRESH_TOKEN` from your local `/admin` page
 5. Add the production redirect URI to Google Cloud Console:
    `https://your-app.vercel.app/api/auth/callback/google`
 6. Deploy and visit `/admin` on your production URL to connect Google Calendar

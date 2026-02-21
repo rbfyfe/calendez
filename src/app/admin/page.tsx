@@ -1,9 +1,12 @@
 import { auth } from "@/lib/auth";
 import { SignOutButton } from "@/components/admin/sign-out-button";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
+import { isRedisConfigured } from "@/lib/owner-tokens";
+import { TokenSetup } from "@/components/admin/token-setup";
 
 export default async function AdminPage() {
   const session = await auth();
+  const hasRedis = isRedisConfigured();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -38,7 +41,9 @@ export default async function AdminPage() {
           )}
         </div>
 
-        <AdminDashboard />
+        {!hasRedis && session?.accessToken && <TokenSetup />}
+
+        <AdminDashboard hasRedis={hasRedis} />
       </main>
     </div>
   );

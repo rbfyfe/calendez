@@ -29,6 +29,12 @@ export async function PUT(request: Request) {
     );
   }
 
-  await setConfig(result.data);
-  return NextResponse.json({ success: true });
+  try {
+    await setConfig(result.data);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to save config";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
 }
